@@ -1,4 +1,4 @@
-# Blixxem Bennard – 1:1 Split-Version
+# Blixxem Bennard – 1:1 Split-Version 
 
 Diese Version wurde aus der ursprünglichen Einzeldatei in eine wartbare Projektstruktur aufgeteilt:
 
