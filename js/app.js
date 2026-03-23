@@ -153,11 +153,16 @@ async function _supaImgSet(key, value) {
 // Bild-Arrays aus den bereits in _store geladenen bb_*-Rows zusammenbauen
 // (kein extra API-Aufruf nötig — _loadFromSupabase hat alle Rows schon geladen)
 function _supaImgAssemble() {
-  if (_store['bb_about'] !== undefined) {
+  // Nur übernehmen wenn noch keine Storage-URL vorhanden (Storage-URLs haben Vorrang)
+  const _isStorageUrl = v => typeof v === 'string' && v.startsWith('http');
+  const _hasStorageUrls = v => Array.isArray(v) && v.some(it => _isStorageUrl(it?.url));
+
+  if (_store['bb_about'] !== undefined && !_isStorageUrl(_store['aboutImage'])) {
     _store['aboutImage'] = _store['bb_about'];
     IDB.set('aboutImage', _store['bb_about']);
   }
   for (const [imgKey, prefix] of Object.entries(_SUPA_IMG_PREFIX)) {
+    if (_hasStorageUrls(_store[imgKey])) continue; // Storage-URLs haben Vorrang
     const cnt = _store[`${prefix}_cnt`];
     if (cnt == null || cnt === 0) continue;
     const arr = [];
