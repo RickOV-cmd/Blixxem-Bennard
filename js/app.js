@@ -9,11 +9,35 @@ function dayOffset(n){const d=new Date();d.setDate(d.getDate()+n);return d.toISO
 const DEF = {
   password: 'bennard2024',
   events: [
-    {id:'e1',name:'Karaoke Night',date:dayOffset(5),time:'20:00',desc:'Schnapp dir ein Mikro und leg los! Spaß garantiert — Talent optional.',cat:'🎤 Karaoke',price:'Kostenlos',type:'one-time'},
-    {id:'e2',name:'Bennard Bingo',date:dayOffset(11),time:'19:30',desc:'Zahlen, Spannung, Jubel — unser Bingo-Abend mit tollen Preisen!',cat:'🎯 Bingo',price:'2 € / Karte',type:'one-time'},
-    {id:'e3',name:'Karnevals-Party 🎊',date:dayOffset(19),time:'21:00',desc:'Die verrückteste Party des Jahres! Kostüm-Prämierung um Mitternacht!',cat:'🎉 Party',price:'Kostenlos',type:'one-time'},
-    {id:'e4',name:'Karaoke Wednesday',time:'20:00',desc:'Jeden Mittwoch Karaoke — sing dich durch die Woche!',cat:'🎤 Karaoke',price:'Kostenlos',type:'recurring',enabled:true,recurrence:{frequency:'weekly',weekday:3,endDate:null}},
-    {id:'e5',name:'Bingo Night',time:'19:30',desc:'Monatliches Bingo — jeden ersten Freitag!',cat:'🎯 Bingo',price:'2 € / Karte',type:'recurring',enabled:true,recurrence:{frequency:'monthly',weekOfMonth:1,weekday:5,endDate:null}}
+    // 🎤 Karaoke
+    {id:'e1',name:'Karaoke',time:'20:00',desc:'Jeden ersten Freitag im Monat — schnapp dir ein Mikro und leg los! Talent optional, Spaß garantiert.',cat:'🎤 Karaoke',price:'Kostenlos',type:'recurring',enabled:true,recurrence:{frequency:'monthly',weekOfMonth:1,weekday:5,endDate:null}},
+    {id:'e2',name:'Karaoke Abend',date:dayOffset(-14),time:'20:00',desc:'Ein unvergesslicher Karaoke-Abend mit tollen Gästen und bester Stimmung.',cat:'🎤 Karaoke',price:'Kostenlos',type:'one-time'},
+    {id:'e3',name:'Karaoke Special',date:dayOffset(0),time:'21:00',desc:'Heute Abend wird gesungen! Alle Genres willkommen — kommt vorbei und macht mit.',cat:'🎤 Karaoke',price:'Kostenlos',type:'one-time'},
+    {id:'e4',name:'Karaoke Nacht',date:dayOffset(18),time:'20:30',desc:'Sing dich durch die Nacht — der nächste große Karaoke-Abend steht an!',cat:'🎤 Karaoke',price:'Kostenlos',type:'one-time'},
+    // 🎯 Bingo
+    {id:'e5',name:'Bennard Bingo',date:dayOffset(-7),time:'19:30',desc:'Zahlen, Spannung, Jubel — unser beliebter Bingo-Abend mit tollen Preisen.',cat:'🎯 Bingo',price:'2 € / Karte',type:'one-time'},
+    {id:'e6',name:'Bingo Spezial',date:dayOffset(0),time:'18:00',desc:'Heute: Sonderrunde mit verdoppelten Gewinnen — Karten an der Theke erhältlich!',cat:'🎯 Bingo',price:'2 € / Karte',type:'one-time'},
+    {id:'e7',name:'Bingo Night',date:dayOffset(12),time:'19:30',desc:'Die nächste Bingo-Runde steht an — Karten sichern und Glück haben!',cat:'🎯 Bingo',price:'2 € / Karte',type:'one-time'},
+    // 🎉 Party
+    {id:'e8',name:'Kostümparty',date:dayOffset(-20),time:'21:00',desc:'Die verrückteste Party des Jahres mit Kostüm-Prämierung um Mitternacht.',cat:'🎉 Party',price:'Kostenlos',type:'one-time'},
+    {id:'e9',name:'Frühlingsparty',date:dayOffset(0),time:'20:00',desc:'Heute: Frühling willkommen heißen mit Getränke-Special den ganzen Abend!',cat:'🎉 Party',price:'Kostenlos',type:'one-time'},
+    {id:'e10',name:'Sommer Opening',date:dayOffset(35),time:'21:00',desc:'Die erste große Sommerparty — kommt zahlreich und feiert mit uns!',cat:'🎉 Party',price:'Kostenlos',type:'one-time'},
+    // 🎶 Musik
+    {id:'e11',name:'Live Band Abend',date:dayOffset(-10),time:'20:00',desc:'Lokale Band mit großartigem Sound — war ein unvergesslicher Abend.',cat:'🎶 Musik',price:'5 € Eintritt',type:'one-time'},
+    {id:'e12',name:'Akustik Session',date:dayOffset(0),time:'19:00',desc:'Heute: intime Akustik-Konzerte verschiedener Künstler — kommt früh!',cat:'🎶 Musik',price:'Kostenlos',type:'one-time'},
+    {id:'e13',name:'Rock Night',date:dayOffset(22),time:'21:00',desc:'Drei Bands, ein Abend — Rock pur im Blixxem Bennard. Eintritt an der Tür.',cat:'🎶 Musik',price:'5 € Eintritt',type:'one-time'},
+    // 🏆 Turnier
+    {id:'e14',name:'Dart Turnier',date:dayOffset(-5),time:'18:00',desc:'Spannendes Dart-Turnier mit Pokal und Freigetränken für den Sieger.',cat:'🏆 Turnier',price:'3 € Startgebühr',type:'one-time'},
+    {id:'e15',name:'Billard Cup',date:dayOffset(0),time:'17:00',desc:'Heute: der monatliche Billard-Cup. Anmeldung bis 16:30 Uhr an der Theke.',cat:'🏆 Turnier',price:'3 € Startgebühr',type:'one-time'},
+    {id:'e16',name:'Kicker Meisterschaft',date:dayOffset(28),time:'18:30',desc:'2-gegen-2 Kicker-Turnier mit Wanderpokal — Teams jetzt anmelden!',cat:'🏆 Turnier',price:'2 € pro Person',type:'one-time'},
+    // 🎭 Sonstige
+    {id:'e17',name:'Stammtisch Special',date:dayOffset(-3),time:'19:00',desc:'Unser monatlicher Stammtisch-Abend mit Überraschungsgästen und guter Laune.',cat:'🎭 Sonstige',price:'Kostenlos',type:'one-time'},
+    {id:'e18',name:'Spieleabend',date:dayOffset(0),time:'18:00',desc:'Heute: Brett- und Kartenspiele für alle — kommt vorbei und spielt mit!',cat:'🎭 Sonstige',price:'Kostenlos',type:'one-time'},
+    {id:'e19',name:'Open Mic Night',date:dayOffset(40),time:'20:00',desc:'Comedians, Poeten, Musiker — zeig was du kannst auf unserer kleinen Bühne!',cat:'🎭 Sonstige',price:'Kostenlos',type:'one-time'},
+    // 🧠 Kneipenquiz
+    {id:'e20',name:'Quiz Night',date:dayOffset(-11),time:'19:00',desc:'Pub-Quiz mit 5 Runden, tollen Preisen und jeder Menge Spaß — war ein voller Erfolg!',cat:'🧠 Kneipenquiz',price:'Kostenlos',type:'one-time'},
+    {id:'e21',name:'Kneipenquiz',date:dayOffset(0),time:'19:30',desc:'Heute: Wer weiß am meisten? Quizfragen aus allen Themenbereichen — Teams willkommen!',cat:'🧠 Kneipenquiz',price:'Kostenlos',type:'one-time'},
+    {id:'e22',name:'Quiz Meisterschaft',date:dayOffset(16),time:'19:30',desc:'Das große Saisonfinale — wer holt sich den Titel Quizchampion 2026?',cat:'🧠 Kneipenquiz',price:'Kostenlos',type:'one-time'}
   ],
   hours:[
     {day:'Montag',open:false,from:'',to:''},
@@ -31,13 +55,267 @@ const DEF = {
 };
 
 /* ════════════════════════════════════════════════════════════
+   MODULE: SUPABASE
+   ════════════════════════════════════════════════════════════ */
+const SUPA_URL = 'https://ntnrsinahgcjqfdjdagn.supabase.co';
+const SUPA_KEY = 'sb_publishable_l0RDpSjjEOVot5x_U5LjLA_VH5adHjK';
+
+// Safe init — falls back to a no-op mock if the CDN script didn't load
+const _supaAvailable = typeof supabase !== 'undefined' && typeof supabase.createClient === 'function';
+const _supa = _supaAvailable
+  ? supabase.createClient(SUPA_URL, SUPA_KEY)
+  : { from: () => ({ select: () => Promise.resolve({ data: [], error: null }),
+                      upsert: () => Promise.resolve({ error: null }),
+                      delete: () => ({ eq: () => Promise.resolve({ error: null }) }) }) };
+
+/* ════════════════════════════════════════════════════════════
+   MODULE: INDEXEDDB — für Bilddaten (kein Größenlimit)
+   ════════════════════════════════════════════════════════════ */
+// Diese Keys enthalten Base64-Bilddaten → IndexedDB statt localStorage
+const _IMG_KEYS = new Set(['galleryImages','igImages','storyKneipe','storyParty','aboutImage']);
+
+const IDB = {
+  _db: null,
+  _open() {
+    if (this._db) return Promise.resolve(this._db);
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open('bb_v1', 1);
+      req.onupgradeneeded = e => e.target.result.createObjectStore('kv', { keyPath: 'k' });
+      req.onsuccess  = e => { this._db = e.target.result; resolve(this._db); };
+      req.onerror    = () => reject(req.error);
+    });
+  },
+  async set(k, v) {
+    try {
+      const db = await this._open();
+      await new Promise((res, rej) => {
+        const tx = db.transaction('kv', 'readwrite');
+        tx.objectStore('kv').put({ k, v });
+        tx.oncomplete = res;
+        tx.onerror    = () => rej(tx.error);
+      });
+    } catch(e) { console.warn('[IDB] set fehlgeschlagen:', e); }
+  },
+  async del(k) {
+    try {
+      const db = await this._open();
+      await new Promise(res => {
+        const tx = db.transaction('kv', 'readwrite');
+        tx.objectStore('kv').delete(k);
+        tx.oncomplete = res; tx.onerror = res;
+      });
+    } catch(e) {}
+  },
+  async getAll() {
+    try {
+      const db = await this._open();
+      return new Promise(resolve => {
+        const req = db.transaction('kv', 'readonly').objectStore('kv').getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror   = () => resolve([]);
+      });
+    } catch(e) { return []; }
+  }
+};
+
+async function _loadFromIDB() {
+  const rows = await IDB.getAll();
+  rows.forEach(({ k, v }) => { _store[k] = v; });
+}
+
+async function _loadFromSupabase() {
+  if (!_supaAvailable) return;
+  try {
+    const { data, error } = await _supa.from('settings').select('*');
+    if (error) { console.warn('[Supabase] Laden fehlgeschlagen:', error.message); return; }
+    if (data) data.forEach(row => {
+      _store[row.key] = row.value;
+      if (_IMG_KEYS.has(row.key)) {
+        IDB.set(row.key, row.value);
+      } else {
+        try { localStorage.setItem('bb_s_' + row.key, JSON.stringify(row.value)); } catch(e) {}
+      }
+    });
+  } catch(e) { console.warn('[Supabase] Verbindungsfehler:', e); }
+}
+
+function _loadFromLocalStorage() {
+  const prefix = 'bb_s_';
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(prefix)) {
+        const settingKey = k.slice(prefix.length);
+        try { _store[settingKey] = JSON.parse(localStorage.getItem(k)); } catch(e) {}
+      }
+    }
+  } catch(e) { console.warn('[Storage] localStorage lesen fehlgeschlagen:', e); }
+}
+
+/* ════════════════════════════════════════════════════════════
    MODULE: STORAGE
    ════════════════════════════════════════════════════════════ */
-const S={
-  get(k){try{const v=localStorage.getItem('bb_'+k);return v!==null?JSON.parse(v):DEF[k]}catch{return DEF[k]}},
-  set(k,v){try{localStorage.setItem('bb_'+k,JSON.stringify(v))}catch{}},
-  del(k){try{localStorage.removeItem('bb_'+k)}catch{}}
+const _store = {};
+const S = {
+  get(k) { return k in _store ? _store[k] : DEF[k]; },
+  set(k, v) {
+    _store[k] = v;
+    if (_IMG_KEYS.has(k)) {
+      // Bilddaten → IndexedDB (kein Größenlimit)
+      IDB.set(k, v);
+    } else {
+      // Kleine Daten → localStorage (synchron, schnell)
+      try { localStorage.setItem('bb_s_' + k, JSON.stringify(v)); } catch(e) {
+        console.warn('[Storage] localStorage voll:', e);
+      }
+    }
+    // Supabase — cross-device Sync
+    if (!_supaAvailable) return;
+    _supa.from('settings').upsert({ key: k, value: v, updated_at: new Date().toISOString() })
+      .then(({ error }) => { if (error) console.warn('[Supabase] Speichern fehlgeschlagen:', error.message); });
+  },
+  del(k) {
+    delete _store[k];
+    if (_IMG_KEYS.has(k)) {
+      IDB.del(k);
+    } else {
+      try { localStorage.removeItem('bb_s_' + k); } catch(e) {}
+    }
+    if (!_supaAvailable) return;
+    _supa.from('settings').delete().eq('key', k)
+      .then(({ error }) => { if (error) console.warn('[Supabase] Löschen fehlgeschlagen:', error.message); });
+  }
 };
+
+/* ════════════════════════════════════════════════════════════
+   MODULE: IMAGES — Supabase Storage + Default Fallback
+   ════════════════════════════════════════════════════════════ */
+const DEFAULT_ABOUT_IMAGE = 'images/embedded-01.jpg';
+const DEFAULT_IG_IMAGES = [
+  {url:'images/embedded-02.jpg',label:'Karaoke Night',path:null},
+  {url:'images/embedded-03.jpg',label:'Spieleabend \u0026 Bier',path:null},
+  {url:'images/embedded-04.jpg',label:'Karnevals-Party',path:null},
+  {url:'images/embedded-05.jpg',label:'Bingo-Abend',path:null},
+  {url:'images/embedded-06.jpg',label:'Cocktails \u0026 Drinks',path:null},
+  {url:'images/embedded-07.jpg',label:'Au\u00dfenbereich',path:null}
+];
+const DEFAULT_GALLERY_IMAGES = [
+  {url:'images/embedded-08.jpg',label:'Blixxem Bennard',path:null},
+  {url:'images/embedded-09.jpg',label:'Unser Gastbereich',path:null},
+  {url:'images/embedded-10.jpg',label:'Lounge',path:null},
+  {url:'images/embedded-11.jpg',label:'Biergarten',path:null},
+  {url:'images/embedded-12.jpg',label:'Au\u00dfenbereich',path:null},
+  {url:'images/embedded-13.jpg',label:'Cocktails',path:null},
+  {url:'images/embedded-14.jpg',label:'Nachos \u0026 Snacks',path:null},
+  {url:'images/embedded-15.jpg',label:'Karaoke Night',path:null},
+  {url:'images/embedded-16.jpg',label:'Prost!',path:null},
+  {url:'images/embedded-17.jpg',label:'Blixxem Bennard',path:null},
+  {url:'images/embedded-18.jpg',label:'Unser Gastbereich',path:null},
+  {url:'images/embedded-19.jpg',label:'Lounge',path:null},
+  {url:'images/embedded-20.jpg',label:'Biergarten',path:null},
+  {url:'images/embedded-21.jpg',label:'Au\u00dfenbereich',path:null},
+  {url:'images/embedded-22.jpg',label:'Blixxem Bennard',path:null},
+  {url:'images/embedded-23.jpg',label:'Unser Gastbereich',path:null},
+  {url:'images/embedded-24.jpg',label:'Cocktails \u0026 Drinks',path:null},
+  {url:'images/embedded-25.jpg',label:'Biergarten',path:null},
+  {url:'images/embedded-26.jpg',label:'Auf uns!',path:null},
+  {url:'images/embedded-27.jpg',label:'Nachos \u0026 Snacks',path:null},
+  {url:'images/embedded-28.jpg',label:'Lounge Bereich',path:null},
+  {url:'images/embedded-29.jpg',label:'Spieleabend',path:null},
+  {url:'images/embedded-30.jpg',label:'Au\u00dfenbereich',path:null},
+  {url:'images/embedded-31.jpg',label:'Voller Laden',path:null},
+  {url:'images/embedded-32.jpg',label:'Karaoke Night',path:null},
+  {url:'images/embedded-33.jpg',label:'Zwei Runde, bitte!',path:null},
+  {url:'images/embedded-34.jpg',label:'Bingo-Abend',path:null},
+  {url:'images/embedded-35.jpg',label:'Party-Stimmung',path:null},
+  {url:'images/embedded-36.jpg',label:'Saisonale Dekoration',path:null},
+  {url:'images/embedded-37.jpg',label:'WC \u2014 f\u00fcr Kunstliebhaber',path:null},
+  {url:'images/embedded-38.jpg',label:'Prost, dat Leven is kort.',path:null},
+  {url:'images/embedded-39.jpg',label:'Unsere Partner',path:null}
+];
+
+/* Komprimiert ein Bild auf max. maxDim px (längste Seite), JPEG quality q */
+function _compress(dataUrl, maxDim, q) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w >= h) { h = Math.round(h * maxDim / w); w = maxDim; }
+        else        { w = Math.round(w * maxDim / h); h = maxDim; }
+      }
+      const c = document.createElement('canvas');
+      c.width = w; c.height = h;
+      c.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(c.toDataURL('image/jpeg', q || 0.82));
+    };
+    img.onerror = () => resolve(dataUrl); // Fallback: unkomprimiert
+    img.src = dataUrl;
+  });
+}
+
+const IMAGES = {
+  _key(tgt) { return tgt === 'ig' ? 'igImages' : 'galleryImages'; },
+  _def(tgt) { return tgt === 'ig' ? DEFAULT_IG_IMAGES : DEFAULT_GALLERY_IMAGES; },
+
+  async upload(files, tgt, onDone) {
+    const key = this._key(tgt), def = this._def(tgt);
+    const imgs = [...(S.get(key) || def)];
+    const readFile = (file) => new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload  = (e) => resolve(e.target.result);
+      reader.onerror = ()  => resolve(null);
+      reader.readAsDataURL(file);
+    });
+    for (const file of files) {
+      const raw = await readFile(file);
+      if (!raw) continue;
+      const dataUrl = await _compress(raw, 1200, 0.82);
+      const label = file.name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ');
+      imgs.push({ url: dataUrl, label, path: null });
+    }
+    S.set(key, imgs);
+    if (onDone) onDone(imgs);
+  },
+
+  async deleteFrom(index, tgt, onDone) {
+    const key = this._key(tgt), def = this._def(tgt);
+    const imgs = [...(S.get(key) || def)];
+    const img = imgs[index];
+    if (img && img.path) { await _supa.storage.from('images').remove([img.path]); }
+    imgs.splice(index, 1);
+    S.set(key, imgs);
+    if (onDone) onDone(imgs);
+  },
+
+  updateLabelIn(index, label, tgt) {
+    const key = this._key(tgt), def = this._def(tgt);
+    const imgs = [...(S.get(key) || def)];
+    if (imgs[index]) { imgs[index] = {...imgs[index], label}; S.set(key, imgs); }
+  },
+
+  reorder(tgt, from, to) {
+    const key = this._key(tgt), def = this._def(tgt);
+    const imgs = [...(S.get(key) || def)];
+    const [moved] = imgs.splice(from, 1);
+    imgs.splice(to, 0, moved);
+    S.set(key, imgs);
+  }
+};
+
+/* ════════════════════════════════════════════════════════════
+   MODULE: STORY DEFAULTS
+   ════════════════════════════════════════════════════════════ */
+const DEFAULT_STORY_KNEIPE = [
+  { url: null, quote: '„Du kommst nur auf ein Bier…"',   sub: 'Klar. Einfach kurz vorbeischauen.' },
+  { url: null, quote: '„…noch eine Runde?"',              sub: 'Die Musik ist zu gut. Die Stimmung noch besser.' },
+  { url: null, quote: '„…und bleibst bis zum Schluss."', sub: 'So ist das eben beim Blixxem Bennard.' }
+];
+const DEFAULT_STORY_PARTY = [
+  { url: null, quote: '„Ich geh nur kurz raus…"',         sub: 'Klar. 😄' },
+  { url: null, quote: '„…noch ein letztes Lied!"',        sub: 'Die Nacht ist jung.' },
+  { url: null, quote: '„…Wann haben die eigentlich zu?"', sub: 'Gute Frage. Egal.' }
+];
 
 /* ════════════════════════════════════════════════════════════
    MODULE: RECURRENCE ENGINE
@@ -412,13 +690,13 @@ const CAL_TIP = {
 /* ════════════════════════════════════════════════════════════
    MODULE: STATE
    ════════════════════════════════════════════════════════════ */
-const state = { adminLoggedIn:false, calDate:new Date(), view:'list', showPastEvents:false, eventsPage:1, EVENTS_PER_PAGE:12 };
+const state = { adminLoggedIn:false, calDate:new Date(), view:'list', showPastEvents:false, eventsPage:1, EVENTS_PER_PAGE:12, activeMood:'kneipe' };
 
 /* ════════════════════════════════════════════════════════════
    MODULE: GALLERY — Masonry Lightbox
    ════════════════════════════════════════════════════════════ */
 const GALLERY = {
-  items: [{"src": "images/embedded-22.jpg", "label": "Blixxem Bennard"}, {"src": "images/embedded-23.jpg", "label": "Unser Gastbereich"}, {"src": "images/embedded-24.jpg", "label": "Cocktails & Drinks"}, {"src": "images/embedded-25.jpg", "label": "Biergarten"}, {"src": "images/embedded-26.jpg", "label": "Auf uns!"}, {"src": "images/embedded-27.jpg", "label": "Nachos & Snacks"}, {"src": "images/embedded-28.jpg", "label": "Lounge Bereich"}, {"src": "images/embedded-29.jpg", "label": "Spieleabend"}, {"src": "images/embedded-30.jpg", "label": "Au\u00dfenbereich"}, {"src": "images/embedded-31.jpg", "label": "Voller Laden"}, {"src": "images/embedded-32.jpg", "label": "Karaoke Night"}, {"src": "images/embedded-33.jpg", "label": "Zwei Runde, bitte!"}, {"src": "images/embedded-34.jpg", "label": "Bingo-Abend"}, {"src": "images/embedded-35.jpg", "label": "Party-Stimmung"}, {"src": "images/embedded-36.jpg", "label": "Saisonale Dekoration"}, {"src": "images/embedded-37.jpg", "label": "WC \u2014 f\u00fcr Kunstliebhaber"}, {"src": "images/embedded-38.jpg", "label": "Prost, dat Leven is kort."}, {"src": "images/embedded-39.jpg", "label": "Unsere Partner"}],
+  items: [], // populated by BB.renderImages()
   current: 0,
 
   open(i) {
@@ -448,6 +726,41 @@ const GALLERY = {
     if (img) { img.src=item.src; img.alt=item.label; }
     if (ctr) ctr.textContent = (this.current+1) + ' / ' + this.items.length + '  ·  ' + item.label;
   },
+
+  openGrid() {
+    const gg = document.getElementById('galleryGrid');
+    if (!gg) return;
+    const grid = document.getElementById('ggGrid');
+    if (grid) {
+      grid.innerHTML = this.items.length
+        ? this.items.map((item, i) =>
+            '<div class="gg-item" onclick="GALLERY.openFromGrid(' + i + ')">' +
+            '<img src="' + esc(item.src) + '" alt="' + esc(item.label) + '" loading="lazy"/>' +
+            '<span class="gg-item-num">' + (i + 1) + '</span>' +
+            '</div>'
+          ).join('')
+        : '<p style="color:rgba(255,255,255,.4);text-align:center;padding:3rem;grid-column:1/-1">Noch keine Bilder vorhanden.</p>';
+    }
+    gg.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', this._onGridKey);
+  },
+
+  closeGrid() {
+    const gg = document.getElementById('galleryGrid');
+    if (gg) gg.classList.remove('open');
+    document.body.style.overflow = '';
+    document.removeEventListener('keydown', this._onGridKey);
+  },
+
+  onGridBackdrop(e) { if (e.target === document.getElementById('galleryGrid')) this.closeGrid(); },
+
+  openFromGrid(i) {
+    this.closeGrid();
+    this.open(i);
+  },
+
+  _onGridKey: (e) => { if (e.key === 'Escape') GALLERY.closeGrid(); },
 
   _onKey: (e) => {
     if (e.key==='Escape') GALLERY.close();
@@ -503,30 +816,92 @@ const LEGAL = {
 const BB = {
 
   init() {
-    SLOGAN.init();
-    POPUP.init();
-    CAL_TIP.init();
-    this.renderAll();
-    this._initNav();
+    // _initReveal first — so .reveal elements become visible even if a render crashes
     this._initReveal();
     this._initTheme();
+    try { SLOGAN.init(); } catch(e) { console.warn('[BB] SLOGAN.init', e); }
+    try { POPUP.init();  } catch(e) { console.warn('[BB] POPUP.init',  e); }
+    try { CAL_TIP.init();} catch(e) { console.warn('[BB] CAL_TIP.init',e); }
+    this.renderAll();
+    this._initNav();
     this._initRsvName();
-    // Legal routing
-    LEGAL.init();
-    COOKIE.init(); // clears legacy keys
-    // Auto-archive old events
+    try { LEGAL.init();  } catch(e) { console.warn('[BB] LEGAL.init',  e); }
+    try { COOKIE.init(); } catch(e) { console.warn('[BB] COOKIE.init', e); }
     this._autoArchive();
   },
 
   /* ── RENDER ALL ── */
   renderAll() {
-    this.renderEvents();
-    this.renderHours();
-    this.renderTexts();
-    this.renderSections();
-    this.renderPromo();
-    this.buildWa();
-    this.initFeatTooltips();
+    const _r = (name, fn) => { try { fn(); } catch(e) { console.warn('[BB] render.' + name, e); } };
+    _r('events',   () => this.renderEvents());
+    _r('hours',    () => this.renderHours());
+    _r('texts',    () => this.renderTexts());
+    _r('sections', () => this.renderSections());
+    _r('promo',    () => this.renderPromo());
+    _r('images',   () => this.renderImages());
+    _r('wa',       () => this.buildWa());
+    _r('tooltips', () => this.initFeatTooltips());
+  },
+
+  /* ── RENDER IMAGES ── */
+  renderImages() {
+    const igImgs  = Array.isArray(S.get('igImages'))      ? S.get('igImages')      : DEFAULT_IG_IMAGES;
+    const galImgs = Array.isArray(S.get('galleryImages')) ? S.get('galleryImages') : DEFAULT_GALLERY_IMAGES;
+    const aboutUrl = S.get('aboutImage') || DEFAULT_ABOUT_IMAGE;
+    // GALLERY.items = gallery images for lightbox
+    GALLERY.items = galImgs.map(img => ({src: img.url, label: img.label}));
+
+    // About image
+    const aboutFrame = document.getElementById('aboutImgFrame');
+    if (aboutFrame) { const img = aboutFrame.querySelector('img'); if (img) img.src = aboutUrl; }
+
+    // Social / Instagram grid
+    const igGrid = document.getElementById('igGrid');
+    if (igGrid) {
+      igGrid.innerHTML = igImgs.map(img =>
+        '<div class="ig-tile" onclick="window.open(\'https://www.instagram.com/blixxem_bennard\',\'_blank\')">' +
+        '<img alt="' + esc(img.label) + '" loading="lazy" src="' + esc(img.url) + '"/>' +
+        '<div class="ig-overlay"><span>' + esc(img.label) + '</span></div></div>'
+      ).join('');
+    }
+
+    // Story panels
+    this.renderStory();
+  },
+
+  renderStory() {
+    const strip = document.getElementById('storyStrip');
+    if (!strip) return;
+    const mood = state.activeMood || 'kneipe';
+    const key  = mood === 'party' ? 'storyParty' : 'storyKneipe';
+    const def  = mood === 'party' ? DEFAULT_STORY_PARTY : DEFAULT_STORY_KNEIPE;
+    const panels = Array.isArray(S.get(key)) ? S.get(key) : def;
+    const galImgs = Array.isArray(S.get('galleryImages')) ? S.get('galleryImages') : DEFAULT_GALLERY_IMAGES;
+    strip.innerHTML = panels.map((p, i) => {
+      const bgUrl = p.url || (galImgs[i] ? galImgs[i].url : '');
+      const bgStyle = bgUrl ? "background-image:url('" + bgUrl.replace(/'/g, "%27") + "')" : '';
+      return '<div class="story-step">' +
+        '<div class="story-img" style="' + bgStyle + '"></div>' +
+        '<div class="story-overlay"></div>' +
+        '<div class="story-txt">' +
+        '<span class="story-num">0' + (i + 1) + '</span>' +
+        '<p class="story-q">' + esc(p.quote) + '</p>' +
+        '<p class="story-s">' + esc(p.sub) + '</p>' +
+        '</div></div>';
+    }).join('');
+  },
+
+  switchMood(mood) {
+    state.activeMood = mood;
+    const btnK = document.getElementById('moodBtnKneipe');
+    const btnP = document.getElementById('moodBtnParty');
+    if (btnK) btnK.classList.toggle('active', mood === 'kneipe');
+    if (btnP) btnP.classList.toggle('active', mood === 'party');
+    const strip = document.getElementById('storyStrip');
+    if (strip) {
+      strip.classList.add('fading');
+      setTimeout(() => { this.renderStory(); strip.classList.remove('fading'); }, 250);
+    }
   },
 
   /* ── NAVIGATION ── */
@@ -618,7 +993,7 @@ const BB = {
     const today = new Date(); today.setHours(0,0,0,0);
     const todayStr = REC._fmt(today.getFullYear(), today.getMonth(), today.getDate());
     const showPast = state.showPastEvents === true;
-    const CATS = {'🎤 Karaoke':'#b03a8a','🎯 Bingo':'#2a7ae4','🎉 Party':'#e4922a','🎶 Musik':'#2aae66','🏆 Turnier':'#c8813a','🎭 Sonstige':'#888'};
+    const CATS = {'🎤 Karaoke':'#b03a8a','🎯 Bingo':'#2a7ae4','🎉 Party':'#e4922a','🎶 Musik':'#2aae66','🏆 Turnier':'#c8813a','🎭 Sonstige':'#888','🧠 Kneipenquiz':'#7b4fcf'};
     const catColor = cat => CATS[cat] || '#c8813a';
 
     const makeCard = (ev, date, isRec, isPast) => {
@@ -792,12 +1167,14 @@ const BB = {
           if (!dateMap[ds]) dateMap[ds]=[];
           dateMap[ds].push({...ev, _recurring:true});
         });
-      } else if (ev.type!=='recurring') {
-        const [eyr,emo] = ev.date.split('-').map(Number);
-        if (eyr===yr && emo-1===mo) {
-          if (!dateMap[ev.date]) dateMap[ev.date]=[];
-          dateMap[ev.date].push({...ev, _recurring:false});
-        }
+      } else if (ev.type!=='recurring' && ev.date) {
+        try {
+          const [eyr,emo] = ev.date.split('-').map(Number);
+          if (eyr===yr && emo-1===mo) {
+            if (!dateMap[ev.date]) dateMap[ev.date]=[];
+            dateMap[ev.date].push({...ev, _recurring:false});
+          }
+        } catch {}
       }
     });
 
@@ -1100,7 +1477,7 @@ const BB = {
 
   _openAdmin(){
     $('adminContent').style.display='block';
-    this._loadAdminEvents();this._loadAdminHours();this._loadAdminTexts();this._loadSecToggles();this._loadPromoAdmin();
+    this._loadAdminEvents();this._loadAdminHours();this._loadAdminTexts();this._loadSecToggles();this._loadPromoAdmin();this._loadAdminImages();
     $('adminLogin').style.display='none';
     const ap=$('adminPanel'); if(ap) ap.classList.add('open');
     state.adminLoggedIn=true;
@@ -1108,11 +1485,44 @@ const BB = {
   },
 
   adminClose(){
+    // Alles automatisch speichern bevor das Panel schließt
+    this._saveAllSilent();
     const ap=$('adminPanel'); if(ap) ap.classList.remove('open');
     state.adminLoggedIn=false;
     $('adminContent').style.display='none';
     $('adminLogin').style.display='block';
     if($('pwInput'))$('pwInput').value='';
+  },
+
+  _saveAllSilent(){
+    // Texte speichern (ohne Toast)
+    try {
+      const t=S.get('texts')||{};
+      const fields={tHero1:'hero1',tHero2:'hero2',tHeroTag:'heroTag',tAboutH:'aboutH',tAboutP1:'aboutP1',tAboutP2:'aboutP2',tAddr:'addr',tEmail:'email'};
+      Object.entries(fields).forEach(([elId,key])=>{const el=$(elId);if(el)t[key]=el.value.trim();});
+      const waEl=$('tWa');if(waEl)t.wa=waEl.value.replace(/\D/g,'');
+      S.set('texts',t);this.renderTexts();this.buildWa();
+    } catch(e){}
+    // Öffnungszeiten speichern (ohne Toast)
+    try {
+      const hours=Array.from({length:7},(_,i)=>({
+        day:(S.get('hours')||DEF.hours)[i]?.day||'',
+        open:$('hOpen'+i)?$('hOpen'+i).checked:false,
+        from:$('hFrom'+i)?$('hFrom'+i).value:'18:00',
+        to:$('hTo'+i)?$('hTo'+i).value:'23:00'
+      }));
+      S.set('hours',hours);this.renderHours();
+    } catch(e){}
+    // Promo speichern (ohne Toast)
+    try {
+      const promo=S.get('promo')||{...DEF.promo};
+      const enEl=$('promoEnabled'),txEl=$('promoText'),urlEl=$('promoUrl');
+      if(enEl) promo.enabled=enEl.checked;
+      if(txEl) promo.text=txEl.value.trim()||'Tickets kaufen';
+      if(urlEl) promo.url=urlEl.value.trim()||'https://www.eventim.de';
+      S.set('promo',promo);this.renderPromo();
+    } catch(e){}
+    toast('Alle Änderungen gespeichert ✅');
   },
 
   tab(t){
@@ -1391,6 +1801,167 @@ const BB = {
   /* Admin: Popup Toggle */
   savePopupSetting(v){S.set('popupEnabled',v);toast(v?'Popup aktiviert':'Popup deaktiviert');},
 
+  /* Admin: Images */
+  _loadAdminImages() {
+    const aboutUrl = S.get('aboutImage') || DEFAULT_ABOUT_IMAGE;
+    const preview = document.getElementById('aboutImgPreview');
+    if (preview) preview.src = aboutUrl;
+    this._renderImgGrid('igAdminGrid',  S.get('igImages')      || DEFAULT_IG_IMAGES,  'ig');
+    this._renderImgGrid('galAdminGrid', S.get('galleryImages') || DEFAULT_GALLERY_IMAGES, 'gallery');
+    this._renderStoryAdmin('kneipe');
+    this._renderStoryAdmin('party');
+
+  },
+
+  _renderStoryAdmin(mood) {
+    const key     = mood === 'party' ? 'storyParty' : 'storyKneipe';
+    const def     = mood === 'party' ? DEFAULT_STORY_PARTY : DEFAULT_STORY_KNEIPE;
+    const panels  = S.get(key) || def;
+    const gridId  = mood === 'party' ? 'storyAdminParty' : 'storyAdminKneipe';
+    const grid    = document.getElementById(gridId);
+    if (!grid) return;
+    grid.innerHTML = panels.map((p, i) => {
+      const thumb = p.url ? '<img src="' + esc(p.url) + '" alt="Panel ' + (i+1) + '" class="story-edit-thumb"/>' :
+        '<div class="story-edit-thumb story-edit-placeholder">🖼 Kein Bild</div>';
+      return '<div class="story-edit-card">' +
+        '<div class="story-edit-header"><span class="story-num">0' + (i+1) + '</span>' +
+        '<label class="btn-a sec sm" style="cursor:pointer">Bild wählen' +
+        '<input type="file" accept="image/*" style="display:none" onchange="BB._uploadStoryImg(this,\'' + mood + '\',' + i + ')"/>' +
+        '</label></div>' +
+        thumb +
+        '<div class="fg" style="margin-top:.5rem"><label>Zitat</label>' +
+        '<input type="text" value="' + esc(p.quote) + '" placeholder="„Zitat…"" onblur="BB._saveStoryText(\'' + mood + '\',' + i + ',\'quote\',this.value)"/></div>' +
+        '<div class="fg"><label>Untertitel</label>' +
+        '<input type="text" value="' + esc(p.sub) + '" placeholder="Untertitel…" onblur="BB._saveStoryText(\'' + mood + '\',' + i + ',\'sub\',this.value)"/></div>' +
+        '</div>';
+    }).join('');
+  },
+
+  _saveStoryText(mood, i, field, value) {
+    const key    = mood === 'party' ? 'storyParty' : 'storyKneipe';
+    const def    = mood === 'party' ? DEFAULT_STORY_PARTY : DEFAULT_STORY_KNEIPE;
+    const panels = JSON.parse(JSON.stringify(S.get(key) || def));
+    panels[i][field] = value.trim();
+    S.set(key, panels);
+    this.renderStory();
+    toast('Text gespeichert.');
+  },
+
+  _uploadStoryImg(input, mood, i) {
+    if (!input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = await _compress(e.target.result, 1200, 0.82);
+      const key    = mood === 'party' ? 'storyParty' : 'storyKneipe';
+      const def    = mood === 'party' ? DEFAULT_STORY_PARTY : DEFAULT_STORY_KNEIPE;
+      const panels = JSON.parse(JSON.stringify(S.get(key) || def));
+      panels[i].url = dataUrl;
+      S.set(key, panels);
+      this.renderStory();
+      this._renderStoryAdmin(mood);
+      toast('Story-Bild aktualisiert! 🖼');
+    };
+    reader.onerror = () => toast('Fehler beim Lesen der Datei.');
+    reader.readAsDataURL(input.files[0]);
+    input.value = '';
+  },
+
+  _renderImgGrid(gridId, imgs, tgt) {
+    const grid = document.getElementById(gridId);
+    if (!grid) return;
+    if (!imgs.length) {
+      grid.innerHTML = '<p style="color:var(--text3);font-size:.82rem;text-align:center;padding:1rem;grid-column:1/3">Noch keine Bilder.</p>';
+      return;
+    }
+    grid.innerHTML = imgs.map((img, i) =>
+      '<div class="img-admin-card" draggable="true" data-idx="' + i + '" data-tgt="' + tgt + '">' +
+      '<img src="' + esc(img.url) + '" alt="' + esc(img.label) + '" loading="lazy"/>' +
+      '<div class="img-admin-card-body">' +
+      '<input type="text" value="' + esc(img.label) + '" onblur="BB._updateImgLabel(' + i + ',this.value,\'' + tgt + '\')" placeholder="Bezeichnung"/>' +
+      '<div class="img-admin-card-actions">' +
+      '<button class="btn-a sm danger" onclick="BB._deleteImg(' + i + ',\'' + tgt + '\')">&#128465; Löschen</button>' +
+      '</div></div></div>'
+    ).join('');
+    this._initDrag(grid);
+  },
+
+  _initDrag(grid) {
+    let from = null;
+    grid.querySelectorAll('.img-admin-card').forEach(card => {
+      card.addEventListener('dragstart', e => {
+        from = parseInt(card.dataset.idx);
+        card.classList.add('img-dragging');
+        e.dataTransfer.effectAllowed = 'move';
+      });
+      card.addEventListener('dragend', () => {
+        card.classList.remove('img-dragging');
+        grid.querySelectorAll('.img-admin-card').forEach(c => c.classList.remove('img-drag-over'));
+      });
+      card.addEventListener('dragover', e => {
+        e.preventDefault();
+        grid.querySelectorAll('.img-admin-card').forEach(c => c.classList.remove('img-drag-over'));
+        card.classList.add('img-drag-over');
+      });
+      card.addEventListener('dragleave', () => card.classList.remove('img-drag-over'));
+      card.addEventListener('drop', e => {
+        e.preventDefault();
+        card.classList.remove('img-drag-over');
+        const to = parseInt(card.dataset.idx);
+        const tgt = card.dataset.tgt;
+        if (from !== null && from !== to) { IMAGES.reorder(tgt, from, to); this.renderImages(); this._loadAdminImages(); }
+        from = null;
+      });
+    });
+  },
+
+  async _uploadImages(input, tgt) {
+    if (!input.files.length) return;
+    const target = tgt || 'gallery';
+    toast('Bilder werden hochgeladen…');
+    await IMAGES.upload(input.files, target, () => {
+      this.renderImages();
+      this._loadAdminImages();
+      toast(input.files.length + ' Bild(er) hochgeladen! \uD83D\uDDBC');
+    });
+    input.value = '';
+  },
+
+  async _deleteImg(i, tgt) {
+    if (!confirm('Bild löschen?')) return;
+    await IMAGES.deleteFrom(i, tgt || 'gallery', () => {
+      this.renderImages();
+      this._loadAdminImages();
+      toast('Bild gelöscht.');
+    });
+  },
+
+  _updateImgLabel(i, label, tgt) {
+    const trimmed = label.trim();
+    if (!trimmed) return;
+    IMAGES.updateLabelIn(i, trimmed, tgt || 'gallery');
+    this.renderImages();
+    toast('Bezeichnung gespeichert.');
+  },
+
+  _uploadAboutImage(input) {
+    if (!input.files[0]) return;
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const dataUrl = await _compress(e.target.result, 1400, 0.85);
+      S.set('aboutImage', dataUrl);
+      const aboutFrame = document.getElementById('aboutImgFrame');
+      if (aboutFrame) { const img = aboutFrame.querySelector('img'); if (img) img.src = dataUrl; }
+      const preview = document.getElementById('aboutImgPreview');
+      if (preview) preview.src = dataUrl;
+      toast('Titelbild aktualisiert! \uD83D\uDDBC');
+    };
+    reader.onerror = () => toast('Fehler beim Lesen der Datei.');
+    reader.readAsDataURL(file);
+    input.value = '';
+  },
+
+
   /* Admin: Export / Reset */
   exportData(){
     const data={events:S.get('events'),hours:S.get('hours'),texts:S.get('texts'),sections:S.get('sections')};
@@ -1400,7 +1971,7 @@ const BB = {
   },
   resetAll(){
     if(!confirm('Wirklich ALLES zurücksetzen?\nDas kann nicht rückgängig gemacht werden!'))return;
-    ['events','hours','texts','sections','password'].forEach(k=>S.del(k));
+    ['events','hours','texts','sections','password','popupEnabled','promo','archive','igImages','galleryImages','aboutImage','storyKneipe','storyParty'].forEach(k=>S.del(k));
     localStorage.removeItem('bb_popup_dismissed');
     this.renderAll();this._openAdmin();toast('Zurückgesetzt.');
   }
@@ -1423,9 +1994,23 @@ const COOKIE = {
 }
 
 window.BB = BB;
+window.GALLERY = GALLERY;
 
 /* ── BOOT ── */
-if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>BB.init());
-else BB.init();
+const _boot = async () => {
+  // 1. localStorage synchron laden (Texte, Events, etc.) — sofort verfügbar
+  _loadFromLocalStorage();
+  // 2. Sofort mit vorhandenen Daten rendern — Seite ist unmittelbar sichtbar
+  BB.init();
+  // 3. Bilddaten aus IndexedDB laden (async) → neu rendern
+  await _loadFromIDB();
+  BB.renderAll();
+  // 4. Supabase laden (cross-device Sync)
+  if (_supaAvailable) {
+    _loadFromSupabase().then(() => BB.renderAll()).catch(() => {});
+  }
+};
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot);
+else _boot();
 
 })();
