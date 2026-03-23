@@ -2064,21 +2064,25 @@ window.GALLERY = GALLERY;
 
 /* ── BOOT ── */
 const _boot = async () => {
-  // 1. localStorage synchron laden (Texte, Events, etc.) — sofort verfügbar
+  // 1. Schnelle lokale Daten laden (sync)
   _loadFromLocalStorage();
-  // 2. Sofort mit vorhandenen Daten rendern — Seite ist unmittelbar sichtbar
-  BB.init();
-  // 3. Bilddaten aus IndexedDB laden (async) → neu rendern
   await _loadFromIDB();
-  BB.renderAll();
-  // 4. Supabase laden (Texte/Einstellungen) + Bilder laden/synchronisieren
+
+  // 2. Supabase laden BEVOR das erste Render — kein Flackern, kein "altes Bild zuerst"
+  //    Maximal 4 Sekunden warten, danach Fallback auf lokale Daten
   if (_supaAvailable) {
-    _loadFromSupabase()
-      .then(() => _supaImgLoad())   // Bilder aus Supabase laden (für andere Besucher)
-      .then(() => BB.renderAll())
-      .then(() => _syncIDBToSupa()) // IDB-Bilder zu Supabase pushen (im Hintergrund)
+    const timeout = new Promise(resolve => setTimeout(resolve, 4000));
+    const supaLoad = _loadFromSupabase()
+      .then(() => _supaImgLoad())
       .catch(() => {});
+    await Promise.race([supaLoad, timeout]);
   }
+
+  // 3. Einmaliges, sauberes Render mit allen korrekten Daten
+  BB.init();
+
+  // 4. Im Hintergrund: lokale Bilder (IDB) zu Supabase synchronisieren
+  if (_supaAvailable) _syncIDBToSupa();
 };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot);
 else _boot();
