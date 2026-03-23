@@ -82,23 +82,71 @@ const _SUPA_IMG_PREFIX = {
   storyParty:    'bb_sp'
 };
 
-// Einzelnes Bild / Array zu Supabase speichern
+// Bild (dataUrl) zu Supabase Storage hochladen → gibt öffentliche CDN-URL zurück
+async function _supaStorageUpload(dataUrl, fname) {
+  try {
+    const res  = await fetch(dataUrl);
+    const blob = await res.blob();
+    const { error } = await _supa.storage.from('photos').upload(fname, blob, {
+      contentType: 'image/jpeg', upsert: true, cacheControl: '31536000'
+    });
+    if (error) { console.warn('[Storage] Upload:', error.message); return null; }
+    return _supa.storage.from('photos').getPublicUrl(fname).data.publicUrl;
+  } catch(e) { console.warn('[Storage] Fehler:', e); return null; }
+}
+
+// Bilder zu Supabase speichern:
+//   → versucht Storage-Upload (CDN-URLs, winzig) — falls nicht verfügbar: altes bb_*-Format
 async function _supaImgSet(key, value) {
   if (!_supaAvailable) return;
+
   if (key === 'aboutImage') {
-    _supa.from('settings').upsert({ key: 'bb_about', value, updated_at: new Date().toISOString() })
-      .then(({ error }) => error && console.warn('[Supa] aboutImage:', error.message));
+    if (typeof value === 'string' && value.startsWith('data:')) {
+      const url = await _supaStorageUpload(value, 'about.jpg');
+      if (url) {
+        _supa.from('settings').upsert({ key: 'aboutImage', value: url, updated_at: new Date().toISOString() });
+        _supa.from('settings').delete().eq('key', 'bb_about'); // alten Eintrag löschen
+        return;
+      }
+    }
+    // Fallback: alter bb_about-Eintrag (falls Storage nicht verfügbar)
+    _supa.from('settings').upsert({ key: 'bb_about', value, updated_at: new Date().toISOString() });
     return;
   }
+
   const prefix = _SUPA_IMG_PREFIX[key];
   if (!prefix) return;
   const arr = Array.isArray(value) ? value : [];
-  _supa.from('settings').upsert({ key: `${prefix}_cnt`, value: arr.length, updated_at: new Date().toISOString() })
-    .then(({ error }) => error && console.warn('[Supa] cnt:', error.message));
-  arr.forEach((item, i) => {
-    _supa.from('settings').upsert({ key: `${prefix}_${i}`, value: item, updated_at: new Date().toISOString() })
-      .then(({ error }) => error && console.warn(`[Supa] img_${i}:`, error.message));
-  });
+
+  // Jedes base64-Bild zu Storage hochladen und URL ersetzen
+  const supaArr = [];
+  let anyUploaded = false;
+  for (let i = 0; i < arr.length; i++) {
+    const item = arr[i];
+    if (typeof item?.url === 'string' && item.url.startsWith('data:')) {
+      const url = await _supaStorageUpload(item.url, `${prefix}_${i}.jpg`);
+      if (url) { supaArr.push({ ...item, url }); anyUploaded = true; continue; }
+    }
+    supaArr.push(item); // bereits URL oder Upload fehlgeschlagen
+  }
+
+  const hasStorageUrls = supaArr.some(it => typeof it?.url === 'string' && it.url.startsWith('http'));
+  if (hasStorageUrls) {
+    // Kompakte Speicherung als einzelner Settings-Eintrag (nur URLs, ~10KB statt ~30MB)
+    await _supa.from('settings').upsert({ key, value: supaArr, updated_at: new Date().toISOString() });
+    // Alte bb_*-Einzelzeilen aufräumen
+    if (anyUploaded) {
+      _supa.from('settings').delete().eq('key', `${prefix}_cnt`);
+      for (let i = 0; i < arr.length; i++)
+        _supa.from('settings').delete().eq('key', `${prefix}_${i}`);
+    }
+  } else {
+    // Fallback: altes bb_*-Split-Format (Storage nicht verfügbar)
+    _supa.from('settings').upsert({ key: `${prefix}_cnt`, value: arr.length, updated_at: new Date().toISOString() });
+    arr.forEach((item, i) => {
+      _supa.from('settings').upsert({ key: `${prefix}_${i}`, value: item, updated_at: new Date().toISOString() });
+    });
+  }
 }
 
 // Alle Bilder aus Supabase laden
@@ -184,14 +232,23 @@ async function _loadFromIDB() {
   rows.forEach(({ k, v }) => { _store[k] = v; });
 }
 
-// Phase 1: nur kleine Text/Einstellungs-Rows laden (schnell, < 1KB)
+// Phase 1: alle kleinen Rows laden (Texte + migrierte Bild-URLs, schnell < 10KB)
 async function _loadTextFromSupabase() {
   if (!_supaAvailable) return;
   try {
-    const { data, error } = await _supa.from('settings').select('*').not('key', 'like', 'bb%');
+    const { data, error } = await _supa.from('settings').select('*').not('key', 'like', 'bb_%');
     if (error) { console.warn('[Supabase] Text-Laden fehlgeschlagen:', error.message); return; }
     if (data) data.forEach(row => {
-      if (_IMG_KEYS.has(row.key)) return;
+      if (_IMG_KEYS.has(row.key)) {
+        // Nur laden wenn es sich um Storage-URLs handelt (nicht base64 — wäre zu groß)
+        const v = row.value;
+        const isStorageUrlArr = Array.isArray(v) && v.some(it => typeof it?.url === 'string' && it.url.startsWith('http'));
+        const isStorageUrl    = typeof v === 'string' && v.startsWith('http');
+        if (!isStorageUrlArr && !isStorageUrl) return;
+        _store[row.key] = v;
+        IDB.set(row.key, v); // lokal cachen für nächsten Start
+        return;
+      }
       _store[row.key] = row.value;
       try { localStorage.setItem('bb_s_' + row.key, JSON.stringify(row.value)); } catch(e) {}
     });
@@ -2072,31 +2129,33 @@ window.GALLERY = GALLERY;
 
 /* ── BOOT ── */
 const _boot = async () => {
-  // 1. Schnelle lokale Daten laden (sync)
+  // 1. Lokale Daten laden (IDB + localStorage) — sofort, kein Netzwerk
   _loadFromLocalStorage();
   await _loadFromIDB();
 
-  // 2. Texte/Einstellungen laden (schnell, ~1KB) — BEVOR erstes Render
+  // 2. Texte + migrierte Bild-URLs von Supabase laden (max 3s — danach Fallback auf lokale Daten)
   if (_supaAvailable) {
-    await _loadTextFromSupabase().catch(() => {});
+    const timeout = new Promise(r => setTimeout(r, 3000));
+    await Promise.race([_loadTextFromSupabase().catch(() => {}), timeout]);
   }
 
-  // 3. Prüfen ob lokale Bilder vorhanden — wenn nicht, Lade-Flag setzen (kein Flash alter Defaults)
+  // 3. Lade-Flag setzen wenn noch keine Bilder vorhanden (verhindert Flash alter Defaults)
   const _hasLocalImages = [..._IMG_KEYS].some(k => {
     const v = _store[k];
     return Array.isArray(v) ? v.length > 0 : v != null;
   });
   if (_supaAvailable && !_hasLocalImages) _supaImgLoading = true;
 
-  // 4. Einmaliges, sauberes Render (mit Texten; Bilder kommen per Flag leer oder aus IDB)
+  // 4. Sofort rendern (Texte korrekt; Bilder aus IDB/Storage-URLs oder Lade-Zustand)
   BB.init();
 
-  // 5. Im Hintergrund: Bilder (~30MB) nachladen + neu rendern wenn fertig
+  // 5. Hintergrund: alte bb_*-Zeilen laden (nur noch nötig vor Storage-Migration)
+  //    + Migration der base64-Bilder zu Supabase Storage (einmalig, pro Gerät mit IDB-Daten)
   if (_supaAvailable) {
     _loadImagesFromSupabase()
       .then(() => { _supaImgLoading = false; BB.renderAll(); })
       .catch(() => { _supaImgLoading = false; });
-    _syncIDBToSupa();
+    _syncIDBToSupa(); // migriert base64 → Storage-URL (einmalig)
   }
 };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot);
