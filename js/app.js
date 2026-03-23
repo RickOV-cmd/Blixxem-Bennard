@@ -129,12 +129,10 @@ async function _loadFromSupabase() {
     const { data, error } = await _supa.from('settings').select('*');
     if (error) { console.warn('[Supabase] Laden fehlgeschlagen:', error.message); return; }
     if (data) data.forEach(row => {
+      // Bilddaten kommen AUSSCHLIESSLICH aus IndexedDB — Supabase darf diese nie überschreiben
+      if (_IMG_KEYS.has(row.key)) return;
       _store[row.key] = row.value;
-      if (_IMG_KEYS.has(row.key)) {
-        IDB.set(row.key, row.value);
-      } else {
-        try { localStorage.setItem('bb_s_' + row.key, JSON.stringify(row.value)); } catch(e) {}
-      }
+      try { localStorage.setItem('bb_s_' + row.key, JSON.stringify(row.value)); } catch(e) {}
     });
   } catch(e) { console.warn('[Supabase] Verbindungsfehler:', e); }
 }
@@ -169,8 +167,8 @@ const S = {
         console.warn('[Storage] localStorage voll:', e);
       }
     }
-    // Supabase — cross-device Sync
-    if (!_supaAvailable) return;
+    // Supabase — nur für kleine Daten (keine Bilder, zu groß)
+    if (!_supaAvailable || _IMG_KEYS.has(k)) return;
     _supa.from('settings').upsert({ key: k, value: v, updated_at: new Date().toISOString() })
       .then(({ error }) => { if (error) console.warn('[Supabase] Speichern fehlgeschlagen:', error.message); });
   },
@@ -181,7 +179,7 @@ const S = {
     } else {
       try { localStorage.removeItem('bb_s_' + k); } catch(e) {}
     }
-    if (!_supaAvailable) return;
+    if (!_supaAvailable || _IMG_KEYS.has(k)) return;
     _supa.from('settings').delete().eq('key', k)
       .then(({ error }) => { if (error) console.warn('[Supabase] Löschen fehlgeschlagen:', error.message); });
   }
