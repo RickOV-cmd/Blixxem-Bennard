@@ -2086,12 +2086,17 @@ const BB = {
     const reader = new FileReader();
     reader.onload = async (e) => {
       const dataUrl = await _compress(e.target.result, 1400, 0.85);
-      S.set('aboutImage', dataUrl);
+      // Lokal sofort aktualisieren
+      _store['aboutImage'] = dataUrl;
+      IDB.set('aboutImage', dataUrl);
       const aboutFrame = document.getElementById('aboutImgFrame');
-      if (aboutFrame) { const img = aboutFrame.querySelector('img'); if (img) img.src = dataUrl; }
+      if (aboutFrame) { const img = aboutFrame.querySelector('img'); if (img) { img.src = dataUrl; img.style.visibility = ''; } }
       const preview = document.getElementById('aboutImgPreview');
       if (preview) preview.src = dataUrl;
-      toast('Titelbild aktualisiert! \uD83D\uDDBC');
+      toast('Titelbild wird gespeichert… ⏳');
+      // Erst zu Supabase hochladen, DANN "gespeichert" zeigen (verhindert Datenverlust beim Schließen)
+      await _supaImgSet('aboutImage', dataUrl);
+      toast('Titelbild gespeichert \u2705');
     };
     reader.onerror = () => toast('Fehler beim Lesen der Datei.');
     reader.readAsDataURL(file);
