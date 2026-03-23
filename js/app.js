@@ -102,16 +102,14 @@ async function _supaImgSet(key, value) {
   if (!_supaAvailable) return;
 
   if (key === 'aboutImage') {
+    // Storage-Upload versuchen (CDN) — bei Fehler base64 direkt speichern
+    let storedValue = value;
     if (typeof value === 'string' && value.startsWith('data:')) {
       const url = await _supaStorageUpload(value, 'about.jpg');
-      if (url) {
-        _supa.from('settings').upsert({ key: 'aboutImage', value: url, updated_at: new Date().toISOString() });
-        _supa.from('settings').delete().eq('key', 'bb_about'); // alten Eintrag löschen
-        return;
-      }
+      if (url) storedValue = url;
     }
-    // Fallback: alter bb_about-Eintrag (falls Storage nicht verfügbar)
-    _supa.from('settings').upsert({ key: 'bb_about', value, updated_at: new Date().toISOString() });
+    await _supa.from('settings').upsert({ key: 'aboutImage', value: storedValue, updated_at: new Date().toISOString() });
+    _supa.from('settings').delete().eq('key', 'bb_about').catch(() => {}); // alten bb_about-Eintrag aufräumen
     return;
   }
 
@@ -246,13 +244,17 @@ async function _loadTextFromSupabase() {
     if (error) { console.warn('[Supabase] Text-Laden fehlgeschlagen:', error.message); return; }
     if (data) data.forEach(row => {
       if (_IMG_KEYS.has(row.key)) {
-        // Nur laden wenn es sich um Storage-URLs handelt (nicht base64 — wäre zu groß)
         const v = row.value;
+        if (row.key === 'aboutImage') {
+          // aboutImage: immer laden (URL oder base64 — einzelnes Bild, kein Problem)
+          _store['aboutImage'] = v;
+          return;
+        }
+        // Andere Bild-Keys: nur Storage-URLs (base64 wäre zu groß für Text-Request)
         const isStorageUrlArr = Array.isArray(v) && v.some(it => typeof it?.url === 'string' && it.url.startsWith('http'));
         const isStorageUrl    = typeof v === 'string' && v.startsWith('http');
         if (!isStorageUrlArr && !isStorageUrl) return;
         _store[row.key] = v;
-        // Kein IDB-Cache für CDN-URLs — Browser-HTTP-Cache ist besser (kein veralteter Stand)
         return;
       }
       _store[row.key] = row.value;
