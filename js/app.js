@@ -226,6 +226,7 @@ function _loadFromLocalStorage() {
    MODULE: STORAGE
    ════════════════════════════════════════════════════════════ */
 const _store = {};
+let _supaImgLoading = false; // true = erste Seite, Bilder kommen noch von Supabase
 const S = {
   get(k) { return k in _store ? _store[k] : DEF[k]; },
   set(k, v) {
@@ -915,15 +916,18 @@ const BB = {
 
   /* ── RENDER IMAGES ── */
   renderImages() {
-    const igImgs  = Array.isArray(S.get('igImages'))      ? S.get('igImages')      : DEFAULT_IG_IMAGES;
-    const galImgs = Array.isArray(S.get('galleryImages')) ? S.get('galleryImages') : DEFAULT_GALLERY_IMAGES;
-    const aboutUrl = S.get('aboutImage') || DEFAULT_ABOUT_IMAGE;
+    const igImgs  = Array.isArray(S.get('igImages'))      ? S.get('igImages')      : (_supaImgLoading ? [] : DEFAULT_IG_IMAGES);
+    const galImgs = Array.isArray(S.get('galleryImages')) ? S.get('galleryImages') : (_supaImgLoading ? [] : DEFAULT_GALLERY_IMAGES);
+    const aboutUrl = S.get('aboutImage') || (_supaImgLoading ? '' : DEFAULT_ABOUT_IMAGE);
     // GALLERY.items = gallery images for lightbox
     GALLERY.items = galImgs.map(img => ({src: img.url, label: img.label}));
 
     // About image
     const aboutFrame = document.getElementById('aboutImgFrame');
-    if (aboutFrame) { const img = aboutFrame.querySelector('img'); if (img) img.src = aboutUrl; }
+    if (aboutFrame) {
+      const img = aboutFrame.querySelector('img');
+      if (img) { img.src = aboutUrl; img.style.visibility = aboutUrl ? '' : 'hidden'; }
+    }
 
     // Social / Instagram grid
     const igGrid = document.getElementById('igGrid');
@@ -946,7 +950,7 @@ const BB = {
     const key  = mood === 'party' ? 'storyParty' : 'storyKneipe';
     const def  = mood === 'party' ? DEFAULT_STORY_PARTY : DEFAULT_STORY_KNEIPE;
     const panels = Array.isArray(S.get(key)) ? S.get(key) : def;
-    const galImgs = Array.isArray(S.get('galleryImages')) ? S.get('galleryImages') : DEFAULT_GALLERY_IMAGES;
+    const galImgs = Array.isArray(S.get('galleryImages')) ? S.get('galleryImages') : (_supaImgLoading ? [] : DEFAULT_GALLERY_IMAGES);
     strip.innerHTML = panels.map((p, i) => {
       const bgUrl = p.url || (galImgs[i] ? galImgs[i].url : '');
       const bgStyle = bgUrl ? "background-image:url('" + bgUrl.replace(/'/g, "%27") + "')" : '';
@@ -2077,14 +2081,21 @@ const _boot = async () => {
     await _loadTextFromSupabase().catch(() => {});
   }
 
-  // 3. Einmaliges, sauberes Render mit Texten + lokalen Bildern (kein Flackern)
+  // 3. Prüfen ob lokale Bilder vorhanden — wenn nicht, Lade-Flag setzen (kein Flash alter Defaults)
+  const _hasLocalImages = [..._IMG_KEYS].some(k => {
+    const v = _store[k];
+    return Array.isArray(v) ? v.length > 0 : v != null;
+  });
+  if (_supaAvailable && !_hasLocalImages) _supaImgLoading = true;
+
+  // 4. Einmaliges, sauberes Render (mit Texten; Bilder kommen per Flag leer oder aus IDB)
   BB.init();
 
-  // 4. Im Hintergrund: Bilder (~30MB) nachladen + neu rendern wenn fertig
+  // 5. Im Hintergrund: Bilder (~30MB) nachladen + neu rendern wenn fertig
   if (_supaAvailable) {
     _loadImagesFromSupabase()
-      .then(() => BB.renderAll())
-      .catch(() => {});
+      .then(() => { _supaImgLoading = false; BB.renderAll(); })
+      .catch(() => { _supaImgLoading = false; });
     _syncIDBToSupa();
   }
 };
