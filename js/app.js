@@ -102,14 +102,9 @@ async function _supaImgSet(key, value) {
   if (!_supaAvailable) return;
 
   if (key === 'aboutImage') {
-    // Storage-Upload versuchen (CDN) — bei Fehler base64 direkt speichern
-    let storedValue = value;
-    if (typeof value === 'string' && value.startsWith('data:')) {
-      const url = await _supaStorageUpload(value, 'about.jpg');
-      if (url) storedValue = url;
-    }
-    await _supa.from('settings').upsert({ key: 'aboutImage', value: storedValue, updated_at: new Date().toISOString() });
-    _supa.from('settings').delete().eq('key', 'bb_about').catch(() => {}); // alten bb_about-Eintrag aufräumen
+    // Direkt in Settings speichern (base64 oder URL) — kein Storage-Upload, kein Hänger
+    await _supa.from('settings').upsert({ key: 'aboutImage', value, updated_at: new Date().toISOString() });
+    _supa.from('settings').delete().eq('key', 'bb_about').catch(() => {});
     return;
   }
 
