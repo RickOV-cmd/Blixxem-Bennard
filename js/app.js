@@ -184,18 +184,29 @@ async function _loadFromIDB() {
   rows.forEach(({ k, v }) => { _store[k] = v; });
 }
 
-async function _loadFromSupabase() {
+// Phase 1: nur kleine Text/Einstellungs-Rows laden (schnell, < 1KB)
+async function _loadTextFromSupabase() {
   if (!_supaAvailable) return;
   try {
-    const { data, error } = await _supa.from('settings').select('*');
-    if (error) { console.warn('[Supabase] Laden fehlgeschlagen:', error.message); return; }
+    const { data, error } = await _supa.from('settings').select('*').not('key', 'like', 'bb%');
+    if (error) { console.warn('[Supabase] Text-Laden fehlgeschlagen:', error.message); return; }
     if (data) data.forEach(row => {
-      // Bilddaten kommen AUSSCHLIESSLICH aus IndexedDB — Supabase darf diese nie überschreiben
       if (_IMG_KEYS.has(row.key)) return;
       _store[row.key] = row.value;
       try { localStorage.setItem('bb_s_' + row.key, JSON.stringify(row.value)); } catch(e) {}
     });
   } catch(e) { console.warn('[Supabase] Verbindungsfehler:', e); }
+}
+
+// Phase 2: nur Bild-Rows laden (groß, im Hintergrund)
+async function _loadImagesFromSupabase() {
+  if (!_supaAvailable) return;
+  try {
+    const { data, error } = await _supa.from('settings').select('*').like('key', 'bb%');
+    if (error) { console.warn('[Supabase] Bild-Laden fehlgeschlagen:', error.message); return; }
+    if (data) data.forEach(row => { _store[row.key] = row.value; });
+    _supaImgAssemble();
+  } catch(e) { console.warn('[Supabase] Bild-Verbindungsfehler:', e); }
 }
 
 function _loadFromLocalStorage() {
@@ -2061,21 +2072,21 @@ const _boot = async () => {
   _loadFromLocalStorage();
   await _loadFromIDB();
 
-  // 2. Supabase laden BEVOR das erste Render — kein Flackern, kein "altes Bild zuerst"
-  //    Maximal 4 Sekunden warten, danach Fallback auf lokale Daten
+  // 2. Texte/Einstellungen laden (schnell, ~1KB) — BEVOR erstes Render
   if (_supaAvailable) {
-    const timeout = new Promise(resolve => setTimeout(resolve, 4000));
-    const supaLoad = _loadFromSupabase()
-      .then(() => _supaImgAssemble())
-      .catch(() => {});
-    await Promise.race([supaLoad, timeout]);
+    await _loadTextFromSupabase().catch(() => {});
   }
 
-  // 3. Einmaliges, sauberes Render mit allen korrekten Daten
+  // 3. Einmaliges, sauberes Render mit Texten + lokalen Bildern (kein Flackern)
   BB.init();
 
-  // 4. Im Hintergrund: lokale Bilder (IDB) zu Supabase synchronisieren
-  if (_supaAvailable) _syncIDBToSupa();
+  // 4. Im Hintergrund: Bilder (~30MB) nachladen + neu rendern wenn fertig
+  if (_supaAvailable) {
+    _loadImagesFromSupabase()
+      .then(() => BB.renderAll())
+      .catch(() => {});
+    _syncIDBToSupa();
+  }
 };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot);
 else _boot();
