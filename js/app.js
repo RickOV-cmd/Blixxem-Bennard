@@ -102,33 +102,26 @@ async function _supaImgSet(key, value) {
 }
 
 // Alle Bilder aus Supabase laden
-async function _supaImgLoad() {
-  if (!_supaAvailable) return;
-  try {
-    const { data, error } = await _supa.from('settings').select('*').like('key', 'bb\\_%');
-    if (error || !data || !data.length) return;
-    const rows = {};
-    data.forEach(r => { rows[r.key] = r.value; });
-
-    if (rows['bb_about'] !== undefined) {
-      _store['aboutImage'] = rows['bb_about'];
-      IDB.set('aboutImage', rows['bb_about']);
+// Bild-Arrays aus den bereits in _store geladenen bb_*-Rows zusammenbauen
+// (kein extra API-Aufruf nötig — _loadFromSupabase hat alle Rows schon geladen)
+function _supaImgAssemble() {
+  if (_store['bb_about'] !== undefined) {
+    _store['aboutImage'] = _store['bb_about'];
+    IDB.set('aboutImage', _store['bb_about']);
+  }
+  for (const [imgKey, prefix] of Object.entries(_SUPA_IMG_PREFIX)) {
+    const cnt = _store[`${prefix}_cnt`];
+    if (cnt == null || cnt === 0) continue;
+    const arr = [];
+    for (let i = 0; i < cnt; i++) {
+      const item = _store[`${prefix}_${i}`];
+      if (item != null) arr.push(item);
     }
-    for (const [imgKey, prefix] of Object.entries(_SUPA_IMG_PREFIX)) {
-      const cnt = rows[`${prefix}_cnt`];
-      if (cnt == null) continue;
-      const arr = [];
-      for (let i = 0; i < cnt; i++) {
-        const item = rows[`${prefix}_${i}`];
-        if (item != null) arr.push(item);
-      }
-      // Supabase nur übernehmen wenn Daten vorhanden
-      if (cnt > 0 && arr.length > 0) {
-        _store[imgKey] = arr;
-        IDB.set(imgKey, arr);
-      }
+    if (arr.length > 0) {
+      _store[imgKey] = arr;
+      IDB.set(imgKey, arr);
     }
-  } catch(e) { console.warn('[Supa] imgLoad:', e); }
+  }
 }
 
 // IDB → Supabase synchronisieren (einmalig beim Start, im Hintergrund)
@@ -2073,7 +2066,7 @@ const _boot = async () => {
   if (_supaAvailable) {
     const timeout = new Promise(resolve => setTimeout(resolve, 4000));
     const supaLoad = _loadFromSupabase()
-      .then(() => _supaImgLoad())
+      .then(() => _supaImgAssemble())
       .catch(() => {});
     await Promise.race([supaLoad, timeout]);
   }
