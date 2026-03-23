@@ -58,7 +58,7 @@ const DEF = {
    MODULE: SUPABASE
    ════════════════════════════════════════════════════════════ */
 const SUPA_URL = 'https://ntnrsinahgcjqfdjdagn.supabase.co';
-const SUPA_KEY = 'sb_publishable_l0RDpSjjEOVot5x_U5LjLA_VH5adHjK';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im50bnJzaW5haGdjanFmZGpkYWduIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyMTMzMzIsImV4cCI6MjA4OTc4OTMzMn0.f6HQP3eBtafguQL4J2eQVVuwNIO8KXgWr7ac_2pPcWY';
 
 // Safe init — falls back to a no-op mock if the CDN script didn't load
 const _supaAvailable = typeof supabase !== 'undefined' && typeof supabase.createClient === 'function';
