@@ -91,7 +91,8 @@ async function _supaStorageUpload(dataUrl, fname) {
       contentType: 'image/jpeg', upsert: true, cacheControl: '31536000'
     });
     if (error) { console.warn('[Storage] Upload:', error.message); return null; }
-    return _supa.storage.from('photos').getPublicUrl(fname).data.publicUrl;
+    const base = _supa.storage.from('photos').getPublicUrl(fname).data.publicUrl;
+    return `${base}?v=${Date.now()}`; // Cache-Busting: neue URL bei jedem Upload
   } catch(e) { console.warn('[Storage] Fehler:', e); return null; }
 }
 
