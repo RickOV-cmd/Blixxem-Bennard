@@ -160,7 +160,7 @@ function _supaImgAssemble() {
 
   if (_store['bb_about'] !== undefined && !_isStorageUrl(_store['aboutImage'])) {
     _store['aboutImage'] = _store['bb_about'];
-    IDB.set('aboutImage', _store['bb_about']);
+    // kein IDB-Cache — Supabase-Daten werden direkt aus Supabase geladen, nicht aus IDB
   }
   for (const [imgKey, prefix] of Object.entries(_SUPA_IMG_PREFIX)) {
     if (_hasStorageUrls(_store[imgKey])) continue; // Storage-URLs haben Vorrang
@@ -173,7 +173,7 @@ function _supaImgAssemble() {
     }
     if (arr.length > 0) {
       _store[imgKey] = arr;
-      IDB.set(imgKey, arr);
+      // kein IDB-Cache — kein veralteter Stand möglich
     }
   }
 }
@@ -252,7 +252,7 @@ async function _loadTextFromSupabase() {
         const isStorageUrl    = typeof v === 'string' && v.startsWith('http');
         if (!isStorageUrlArr && !isStorageUrl) return;
         _store[row.key] = v;
-        IDB.set(row.key, v); // lokal cachen für nächsten Start
+        // Kein IDB-Cache für CDN-URLs — Browser-HTTP-Cache ist besser (kein veralteter Stand)
         return;
       }
       _store[row.key] = row.value;
@@ -981,7 +981,7 @@ const BB = {
   renderImages() {
     const igImgs  = Array.isArray(S.get('igImages'))      ? S.get('igImages')      : (_supaImgLoading ? [] : DEFAULT_IG_IMAGES);
     const galImgs = Array.isArray(S.get('galleryImages')) ? S.get('galleryImages') : (_supaImgLoading ? [] : DEFAULT_GALLERY_IMAGES);
-    const aboutUrl = S.get('aboutImage') || (_supaImgLoading ? '' : DEFAULT_ABOUT_IMAGE);
+    const aboutUrl = S.get('aboutImage') || '';
     // GALLERY.items = gallery images for lightbox
     GALLERY.items = galImgs.map(img => ({src: img.url, label: img.label}));
 
@@ -2139,10 +2139,13 @@ const _boot = async () => {
   _loadFromLocalStorage();
   await _loadFromIDB();
 
-  // 2. Texte + migrierte Bild-URLs von Supabase laden (max 3s — danach Fallback auf lokale Daten)
+  // 2. Texte + Storage-Bild-URLs von Supabase laden (max 3s — danach Fallback)
+  const _supaTextPromise = _supaAvailable
+    ? _loadTextFromSupabase().catch(() => {})
+    : Promise.resolve();
   if (_supaAvailable) {
     const timeout = new Promise(r => setTimeout(r, 3000));
-    await Promise.race([_loadTextFromSupabase().catch(() => {}), timeout]);
+    await Promise.race([_supaTextPromise, timeout]);
   }
 
   // 3. Lade-Flag setzen wenn noch keine Bilder vorhanden (verhindert Flash alter Defaults)
@@ -2152,10 +2155,13 @@ const _boot = async () => {
   });
   if (_supaAvailable && !_hasLocalImages) _supaImgLoading = true;
 
-  // 4. Sofort rendern (Texte korrekt; Bilder aus IDB/Storage-URLs oder Lade-Zustand)
+  // 4. Sofort rendern (Texte korrekt; Bilder aus Supabase oder Lade-Zustand)
   BB.init();
 
-  // 5. Hintergrund: alte bb_*-Zeilen laden (nur noch nötig vor Storage-Migration)
+  // 5. Falls Supabase nach dem Timeout antwortet: Bilder sofort neu rendern (kein Flash)
+  _supaTextPromise.then(() => { _supaImgLoading = false; BB.renderImages(); });
+
+  // 6. Hintergrund: alte bb_*-Zeilen laden (nur noch nötig vor Storage-Migration)
   //    + Migration der base64-Bilder zu Supabase Storage (einmalig, pro Gerät mit IDB-Daten)
   if (_supaAvailable) {
     _loadImagesFromSupabase()
