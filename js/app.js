@@ -74,6 +74,74 @@ const _supa = _supaAvailable
 // Diese Keys enthalten Base64-Bilddaten → IndexedDB statt localStorage
 const _IMG_KEYS = new Set(['galleryImages','igImages','storyKneipe','storyParty','aboutImage']);
 
+// Supabase-Präfixe für einzelne Bild-Rows (jedes Bild = eigene Zeile → kein Größenlimit)
+const _SUPA_IMG_PREFIX = {
+  galleryImages: 'bb_gal',
+  igImages:      'bb_ig',
+  storyKneipe:   'bb_sk',
+  storyParty:    'bb_sp'
+};
+
+// Einzelnes Bild / Array zu Supabase speichern
+async function _supaImgSet(key, value) {
+  if (!_supaAvailable) return;
+  if (key === 'aboutImage') {
+    _supa.from('settings').upsert({ key: 'bb_about', value, updated_at: new Date().toISOString() })
+      .then(({ error }) => error && console.warn('[Supa] aboutImage:', error.message));
+    return;
+  }
+  const prefix = _SUPA_IMG_PREFIX[key];
+  if (!prefix) return;
+  const arr = Array.isArray(value) ? value : [];
+  _supa.from('settings').upsert({ key: `${prefix}_cnt`, value: arr.length, updated_at: new Date().toISOString() })
+    .then(({ error }) => error && console.warn('[Supa] cnt:', error.message));
+  arr.forEach((item, i) => {
+    _supa.from('settings').upsert({ key: `${prefix}_${i}`, value: item, updated_at: new Date().toISOString() })
+      .then(({ error }) => error && console.warn(`[Supa] img_${i}:`, error.message));
+  });
+}
+
+// Alle Bilder aus Supabase laden
+async function _supaImgLoad() {
+  if (!_supaAvailable) return;
+  try {
+    const { data, error } = await _supa.from('settings').select('*').like('key', 'bb\\_%');
+    if (error || !data || !data.length) return;
+    const rows = {};
+    data.forEach(r => { rows[r.key] = r.value; });
+
+    if (rows['bb_about'] !== undefined) {
+      _store['aboutImage'] = rows['bb_about'];
+      IDB.set('aboutImage', rows['bb_about']);
+    }
+    for (const [imgKey, prefix] of Object.entries(_SUPA_IMG_PREFIX)) {
+      const cnt = rows[`${prefix}_cnt`];
+      if (cnt == null) continue;
+      const arr = [];
+      for (let i = 0; i < cnt; i++) {
+        const item = rows[`${prefix}_${i}`];
+        if (item != null) arr.push(item);
+      }
+      // Supabase nur übernehmen wenn Daten vorhanden
+      if (cnt > 0 && arr.length > 0) {
+        _store[imgKey] = arr;
+        IDB.set(imgKey, arr);
+      }
+    }
+  } catch(e) { console.warn('[Supa] imgLoad:', e); }
+}
+
+// IDB → Supabase synchronisieren (einmalig beim Start, im Hintergrund)
+async function _syncIDBToSupa() {
+  if (!_supaAvailable) return;
+  for (const key of _IMG_KEYS) {
+    const val = _store[key];
+    if (!val) continue;
+    if (Array.isArray(val) && val.length === 0) continue;
+    await _supaImgSet(key, val);
+  }
+}
+
 const IDB = {
   _db: null,
   _open() {
@@ -159,18 +227,18 @@ const S = {
   set(k, v) {
     _store[k] = v;
     if (_IMG_KEYS.has(k)) {
-      // Bilddaten → IndexedDB (kein Größenlimit)
+      // Bilddaten → IndexedDB (lokal) + Supabase (einzelne Rows, für alle Besucher)
       IDB.set(k, v);
+      _supaImgSet(k, v);
     } else {
-      // Kleine Daten → localStorage (synchron, schnell)
+      // Kleine Daten → localStorage (synchron, schnell) + Supabase
       try { localStorage.setItem('bb_s_' + k, JSON.stringify(v)); } catch(e) {
         console.warn('[Storage] localStorage voll:', e);
       }
+      if (!_supaAvailable) return;
+      _supa.from('settings').upsert({ key: k, value: v, updated_at: new Date().toISOString() })
+        .then(({ error }) => { if (error) console.warn('[Supabase] Speichern fehlgeschlagen:', error.message); });
     }
-    // Supabase — nur für kleine Daten (keine Bilder, zu groß)
-    if (!_supaAvailable || _IMG_KEYS.has(k)) return;
-    _supa.from('settings').upsert({ key: k, value: v, updated_at: new Date().toISOString() })
-      .then(({ error }) => { if (error) console.warn('[Supabase] Speichern fehlgeschlagen:', error.message); });
   },
   del(k) {
     delete _store[k];
@@ -2003,9 +2071,13 @@ const _boot = async () => {
   // 3. Bilddaten aus IndexedDB laden (async) → neu rendern
   await _loadFromIDB();
   BB.renderAll();
-  // 4. Supabase laden (cross-device Sync)
+  // 4. Supabase laden (Texte/Einstellungen) + Bilder laden/synchronisieren
   if (_supaAvailable) {
-    _loadFromSupabase().then(() => BB.renderAll()).catch(() => {});
+    _loadFromSupabase()
+      .then(() => _supaImgLoad())   // Bilder aus Supabase laden (für andere Besucher)
+      .then(() => BB.renderAll())
+      .then(() => _syncIDBToSupa()) // IDB-Bilder zu Supabase pushen (im Hintergrund)
+      .catch(() => {});
   }
 };
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', _boot);
